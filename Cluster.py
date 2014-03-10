@@ -1,4 +1,4 @@
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MiniBatchKMeans
 import os, numpy
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -10,7 +10,31 @@ class Cluster:
     def run_main(self):
         self.load_data()
         self.vectorize()
+
+        #KMeans - K++
+        print "KMeans - K++"
+        self.kmeans = KMeans(n_clusters=3, init='k-means++', n_init=10000)
         self.train()
+        self.get_metrics()
+
+        #MiniBatchKMeans - K++
+        print "MiniBatchKMeans - K++"
+        self.kmeans = MiniBatchKMeans(n_clusters=3, init='k-means++', n_init=10000)       
+        self.train()
+        self.get_metrics()
+ 
+        #KMeans - Random
+        print "KMeans - Random"
+        self.kmeans = KMeans(n_clusters=3, init='random', n_init=10000)
+        self.train()
+        self.get_metrics()
+
+        #MiniBatchKMeans - K++
+        print "MiniBatchKMeans - Random"
+        self.kmeans = MiniBatchKMeans(n_clusters=3, init='random', n_init=10000)       
+        self.train()
+        self.get_metrics()
+
 
     def load_data(self):
         self.training_data = []
@@ -19,13 +43,19 @@ class Cluster:
                 self.training_data.append(line)
 
     def vectorize(self):
-        vect = TfidfVectorizer(stop_words='english')  
-        self.X = vect.fit_transform(self.training_data)
+        self.vect = TfidfVectorizer(stop_words='english')  
+        self.X = self.vect.fit_transform(self.training_data)
 
     def train(self):
-        kmeans = KMeans(n_clusters=3, init='k-means++', n_init=10)
-        kmeans.fit(self.X)        
-        import pdb;pdb.set_trace()
+        self.kmeans.fit(self.X)        
+
+    def get_metrics(self):
+        print self.kmeans.labels_ 
+
+    def test(self):
+        self.test_data = ["I know both Ashok and Harini"]
+        self.Y = self.vect.fit_transform(self.test_data)
+        print self.kmeans.predict(self.Y)
 
 
 if __name__ == "__main__":
